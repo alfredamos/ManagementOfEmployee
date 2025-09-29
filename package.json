@@ -1,9 +1,11 @@
 {
   "name": "managementofemployee",
-  "version": "0.0.0",
-  "private": true,
+  "version": "1.0.0",
+  "main": "dist/app.js",
   "scripts": {
-    "start": "node ./bin/www"
+    "build": "rimraf dist && tsc",
+    "start": "tsc && node ./dist/app.js",
+    "dev": "nodemon - exec ts-node ./src/app.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.16.2",

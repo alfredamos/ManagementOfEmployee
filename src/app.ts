@@ -1,20 +1,42 @@
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+import express from "express";
+import dotenv from "dotenv";
+import cors from "cors";
+import cookieParser from "cookie-parser";
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+import authRoutes from "./routes/auth.route";
+import notFoundRouteMiddleware from "./middlewares/notFoundrouteHandler.middleware";
+import errorHandlerMiddleware from "./middlewares/errorHandler.middleware";
 
-var app = express();
+dotenv.config();
 
-app.use(logger('dev'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+//----> Initialize express app.
+const app = express();
+
+//----> Get the port number from environment from file.
+const Port = process.env.PORT || 5000;
+
+//----> Parse cookie.
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
+//----> Activate cors.
+app.use(
+    cors({
+        credentials: true,
+        origin: ["http://localhost:4200", "http://localhost:5173"],
+    })
+);
 
-module.exports = app;
+//----> Not url encoded
+app.use(express.urlencoded({ extended: false }));
+
+//----> Allow json
+app.use(express.json());
+
+//----> Auth routes.
+app.use("/api/auth", authRoutes);
+
+app.use(notFoundRouteMiddleware);
+app.use(errorHandlerMiddleware);
+
+//----> Listening port.
+app.listen(Port, () => console.log(`App is listening on ${Port}...`));

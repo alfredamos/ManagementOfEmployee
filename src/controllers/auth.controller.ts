@@ -6,6 +6,7 @@ import {ChangeUserNameDto} from "../dto/changeUserName.dto";
 import {ChangeUserImageDto} from "../dto/changeUserImage.dto";
 import {SignupDto} from "../dto/signup.dto";
 import {LoginUserDto} from "../dto/loginUser.dto";
+import {toUserDto} from "../utils/toUserDto.util";
 
 export class AuthController {
     ////----> Change password controller function.
@@ -68,17 +69,14 @@ export class AuthController {
         const user = await authModel.getCurrentUser(email);
 
         //----> Send back the response.
-        res.status(StatusCodes.OK).json(user);
+        res.status(StatusCodes.OK).json(toUserDto(user));
 
     }
 
     ////----> Refresh token controller function.
     static async refreshUserToken(req: Request, res: Response) {
-        //----> Get the user info from request object.
-        const user = req.user;
-
         //----> refresh the user token.
-        const token = await authModel.refreshUserToken(req, res, user)
+        const token = await authModel.refreshUserToken(req, res)
 
         //----> Send back response.
         res.status(StatusCodes.OK).json(token);

@@ -121,25 +121,53 @@ class AuthModel{
         return this.getTokensAndSetCookies(user, res);
     }
 
+    ////----> Get cookie function.
+    getCookie = (req: Request, tokenName: string) => {
+        try{
+            return req?.cookies[tokenName];
+        }catch(err){
+            throw catchError(StatusCodes.UNAUTHORIZED, "You do not have a valid token!");
+        }
+
+    }
+
     ////----> Refresh token function.
-    async refreshUserToken(req: Request, res: Response, user: UserAuth){
+    async refreshUserToken(req: Request, res: Response){
         //----> Get refresh token.
         const refreshToken = this.getCookie(req, CookieParamUtil.refreshToken);
-
+        console.log("In refresh-user-token, refreshToken : ",refreshToken);
         //----> Parse the refresh-token and check for validity of token.
-        const tokenResult = this.validateUserToken(refreshToken)
+        const userAuth = this.validateUserToken(refreshToken)
 
         //----> Get the last valid token and check its validity.
-        const validToken = (await tokenModel.findAllValidTokensByUserId(tokenResult.id)).find(token => token.refreshToken && tokenResult.id);
+        const validToken = (await tokenModel.findAllValidTokensByUserId(userAuth.id)).find(token => token.refreshToken && userAuth.id);
         if (!validToken) {
             throw catchError(StatusCodes.UNAUTHORIZED, "Invalid credentials!");
         }
 
         //----> Revoked all tokens.
-        await tokenModel.revokeAllValidUserTokens(tokenResult.id);
+        await tokenModel.revokeAllValidUserTokens(userAuth.id);
 
         //----> Get access and refresh tokens and set access and refresh cookies and return access token.
-        return this.getTokensAndSetCookies(user, res);
+        return this.getTokensAndSetCookies(userAuth, res);
+    }
+
+    validateUserToken = (token: string) => {
+        //----> Check for empty token.
+        if(!token) {
+            throw catchError(
+                StatusCodes.UNAUTHORIZED,
+                "Invalid credentials!"
+            );
+        }
+
+        //----> Verify the jwt-token
+        try {
+            return jwt?.verify(token, process.env.JWT_TOKEN_KEY!) as TokenJwt;
+        }catch(err) {
+            throw catchError(StatusCodes.UNAUTHORIZED, "Invalid credentials!");
+        }
+
     }
 
     ////----> Signup model function.
@@ -230,16 +258,6 @@ class AuthModel{
         })
     }
 
-    ////----> Get cookie function.
-    private getCookie = (req: Request, tokenName: string) => {
-        try{
-            return JSON.parse(req.cookies[tokenName]);
-        }catch(err){
-            throw catchError(StatusCodes.UNAUTHORIZED, "You do not have a valid token!");
-        }
-
-    }
-
     ////----> create new token object.
     private makeNewToken = (accessToken: string, refreshToken: string, userId: string) => {
         return new CreateTokenDto(accessToken, refreshToken, false, false, TokenType.Bearer, userId);
@@ -259,23 +277,6 @@ class AuthModel{
         );
     }
 
-    private validateUserToken = (token: string) => {
-        //----> Check for empty token.
-        if(!token) {
-            throw catchError(
-                StatusCodes.UNAUTHORIZED,
-                "Invalid credentials!"
-            );
-        }
-
-        //----> Verify the jwt-token
-        try {
-            return jwt?.verify(token, process.env.JWT_TOKEN_KEY!) as TokenJwt;
-        }catch(err) {
-            throw catchError(StatusCodes.UNAUTHORIZED, "Invalid credentials!");
-        }
-
-    }
 }
 
 export const authModel = new AuthModel();
