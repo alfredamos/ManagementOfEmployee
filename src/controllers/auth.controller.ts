@@ -5,6 +5,7 @@ import {StatusCodes} from "http-status-codes";
 import {ChangeUserNameDto} from "../dto/changeUserName.dto";
 import {ChangeUserImageDto} from "../dto/changeUserImage.dto";
 import {SignupDto} from "../dto/signup.dto";
+import {LoginUserDto} from "../dto/loginUser.dto";
 
 export class AuthController {
     ////----> Change password controller function.
@@ -41,6 +42,43 @@ export class AuthController {
 
         //----> Send back the response.
         res.status(StatusCodes.OK).json(response);
+    }
+
+    ////----> Log in user function.
+    static async loginUser(req: Request, res: Response) {
+        //----> Get login payload.
+        const loginUserDto = req.body as LoginUserDto;
+
+        //----> Check that this user is a valid user.
+        const user = await authModel.loginUser(loginUserDto);
+
+        //----> Login in the user and generate access and refresh tokens and store them in cookies.
+        const token = await authModel.getLoginAccess(res, user);
+
+        //----> Send back response.
+        res.status(StatusCodes.OK).json(token);
+    }
+
+    ////----> Get current user function.
+    async getCurrentUser(req: Request, res: Response) {
+        //----> Get the user info from request object.
+        const {email} = req.user;
+
+        //----> Get the current user from database.
+        const user = await authModel.getCurrentUser(email);
+
+        //----> Send back the response.
+        res.status(StatusCodes.OK).json(user);
+
+    }
+
+    ////----> Refresh token controller function.
+    async refreshUser(req: Request, res: Response) {
+        //----> Get the user info from request object.
+        const user = req.user;
+
+        //----> refresh the user token.
+        const token = await authModel.refreshUserToken(req, res, user)
     }
 
     ////----> Signup controller function
