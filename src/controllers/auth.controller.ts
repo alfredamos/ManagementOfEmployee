@@ -60,7 +60,7 @@ export class AuthController {
     }
 
     ////----> Get current user function.
-    async getCurrentUser(req: Request, res: Response) {
+    static async getCurrentUser(req: Request, res: Response) {
         //----> Get the user info from request object.
         const {email} = req.user;
 
@@ -73,12 +73,15 @@ export class AuthController {
     }
 
     ////----> Refresh token controller function.
-    async refreshUser(req: Request, res: Response) {
+    static async refreshUserToken(req: Request, res: Response) {
         //----> Get the user info from request object.
         const user = req.user;
 
         //----> refresh the user token.
         const token = await authModel.refreshUserToken(req, res, user)
+
+        //----> Send back response.
+        res.status(StatusCodes.OK).json(token);
     }
 
     ////----> Signup controller function
