@@ -1,0 +1,68 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       String @id @default(uuid())
+  name     String @db.VarChar(255)
+  email    String @unique @db.VarChar(255)
+  password String @db.VarChar(255)
+  role     Role   @default(User)
+  image    String @db.VarChar(255)
+
+  employee Employee?
+  tokens   Token[]
+
+  @@map("users")
+}
+
+model Employee {
+  id          String   @id @default(uuid())
+  address     String   @db.VarChar(255)
+  name        String   @db.VarChar(255)
+  email       String   @unique @db.VarChar(255)
+  phone       String   @db.VarChar(255)
+  gender      Gender   @default(Male)
+  image       String   @db.VarChar(255)
+  dateOfBirth DateTime
+  age         Int
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@map("employees")
+}
+
+model Token {
+  id           String    @id @default(uuid())
+  accessToken  String    @unique @db.VarChar(750)
+  refreshToken String    @unique @db.VarChar(750)
+  revoked      Boolean
+  expired      Boolean
+  tokenType    TokenType @default(Bearer)
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+
+  @@map("tokens")
+}
+
+enum Gender {
+  Female
+  Male
+}
+
+enum Role {
+  Admin
+  Staff
+  User
+}
+
+enum TokenType {
+  Bearer
+}
