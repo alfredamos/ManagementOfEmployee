@@ -10,7 +10,7 @@ export function changeUserPasswordMiddleware(req: Request, _res: Response, next:
     const changeUserPasswordDto = req.body as ChangeUserPasswordDto;
 
     if (!validateWithZodSchema(changeUserPasswordSchema, changeUserPasswordDto)) {
-        throw catchError(StatusCodes.BAD_REQUEST, "All fields are !");
+        throw catchError(StatusCodes.BAD_REQUEST, "All fields are required!");
     }
 
     //----> All fields are valid

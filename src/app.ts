@@ -6,6 +6,8 @@ import cookieParser from "cookie-parser";
 import authRoutes from "./routes/auth.route";
 import notFoundRouteMiddleware from "./middlewares/notFoundrouteHandler.middleware";
 import errorHandlerMiddleware from "./middlewares/errorHandler.middleware";
+import {cookieBasedAuthenticationMiddleware} from "./middlewares/cookieBasedAuthentication.middleware";
+import {cookieBasedAdminRoleMiddleware} from "./middlewares/cookieBasedAdminRole.middleware";
 
 dotenv.config();
 
@@ -31,6 +33,12 @@ app.use(express.urlencoded({ extended: false }));
 
 //----> Allow json
 app.use(express.json());
+
+//----> Jwt cookie based authentication middleware.
+app.use(cookieBasedAuthenticationMiddleware);
+
+//----> Admin cookie based middleware.
+app.use(cookieBasedAdminRoleMiddleware);
 
 //----> Auth routes.
 app.use("/api/auth", authRoutes);

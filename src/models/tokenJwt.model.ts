@@ -11,6 +11,18 @@ export class TokenJwtModel {
         return prisma.token.create({data: {...token}});
     }
 
+    ////----> Edit token function.
+    async editToken(token: Token, tokenId: string){
+        //----> Fetch the token with the given id.
+        await this.existTokenById(tokenId);
+
+        //----> Update the token with the given id.
+        await prisma.token.update({where: {id: tokenId}, data: {...token}});
+
+        //----> Send back the response.
+        return new ResponseMessage("Token has been updated successfully!", "success", StatusCodes.OK);
+    }
+
     ////----> Find token object by given access-token function.
     async findTokenByAccessToken(accessToken: string){
         const token = await prisma.token.findUnique({where: {accessToken: accessToken}});
@@ -57,7 +69,7 @@ export class TokenJwtModel {
         const revokedTokenIds = revokedTokens.map((token) => token.id);
 
         //----> Delete all revoked tokens.
-        const deltedTokens = await prisma.token.deleteMany({
+        const deletedTokens = await prisma.token.deleteMany({
             where: {
                 id : {
                     in: revokedTokenIds,
@@ -66,12 +78,25 @@ export class TokenJwtModel {
         })
 
         //----> Verify that tokens are actually deleted.
-        if (!deltedTokens?.count){
+        if (!deletedTokens?.count){
             throw catchError(StatusCodes.NOT_FOUND, "No token deleted!");
         }
 
         //----> Send back the response.
         return new ResponseMessage("All revoked tokens have been deleted successfully!", "success", StatusCodes.OK)
+    }
+
+    private existTokenById = async (id: string) => {
+        //----> Fetch the token with the given id from database.
+        const token = await prisma.token.findUnique({where: {id}});
+
+        //----> Check for existence of token.
+        if (!token){
+            throw catchError(StatusCodes.NOT_FOUND, "The token with the given id does not exist!");
+        }
+
+        //----> Send back the response.
+        return token;
     }
 }
 

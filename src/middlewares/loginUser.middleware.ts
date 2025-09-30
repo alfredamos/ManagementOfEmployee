@@ -2,14 +2,14 @@ import {NextFunction, Request, Response} from "express";
 import {validateWithZodSchema} from "../validations/zodSchema.validation";
 import catchError from "http-errors";
 import {StatusCodes} from "http-status-codes";
-import {ChangeUserImageDto} from "../dto/changeUserImage.dto";
-import {changeUserImageSchema} from "../validations/auth.validation";
+import {loginUserSchema} from "../validations/auth.validation";
+import {LoginUserDto} from "../dto/loginUser.dto";
 
-export function changeUserImageMiddleware(req: Request, _res: Response, next: NextFunction)  {
+export function loginUserMiddleware(req: Request, _res: Response, next: NextFunction)  {
     //----> Get the payload from request object.
-    const changeUserImageDto = req.body as ChangeUserImageDto;
+    const loginUserDto = req.body as LoginUserDto;
 
-    if (!validateWithZodSchema(changeUserImageSchema, changeUserImageDto)) {
+    if (!validateWithZodSchema(loginUserSchema, loginUserDto)) {
         throw catchError(StatusCodes.BAD_REQUEST, "All fields are required!");
     }
 

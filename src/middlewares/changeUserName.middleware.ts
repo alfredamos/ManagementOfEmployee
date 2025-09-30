@@ -10,7 +10,7 @@ export function changeUserNameMiddleware(req: Request, _res: Response, next: Nex
     const changeUserNameDto = req.body as ChangeUserNameDto;
 
     if (!validateWithZodSchema(changeUserNameSchema, changeUserNameDto)) {
-        throw catchError(StatusCodes.BAD_REQUEST, "All fields are !");
+        throw catchError(StatusCodes.BAD_REQUEST, "All fields are required!");
     }
 
     //----> All fields are valid

@@ -1,7 +1,6 @@
 import {Gender, Role} from "@prisma/client";
 
-export class SignupDto {
-    id: string;
+export class SignupUserDto {
     name: string;
     address: string;
     email: string;

@@ -4,7 +4,7 @@ import {authModel} from "../models/auth.model";
 import {StatusCodes} from "http-status-codes";
 import {ChangeUserNameDto} from "../dto/changeUserName.dto";
 import {ChangeUserImageDto} from "../dto/changeUserImage.dto";
-import {SignupDto} from "../dto/signup.dto";
+import {SignupUserDto} from "../dto/signupUser.dto";
 import {LoginUserDto} from "../dto/loginUser.dto";
 import {toUserDto} from "../utils/toUserDto.util";
 
@@ -25,7 +25,7 @@ export class AuthController {
     static async changeUserName(req: Request, res: Response) {
         //----> Get the change password payload from request.
         const changeUserNameDto = req.body as ChangeUserNameDto;
-
+        console.log("In the change-user-name")
         //----> Store the change in name into the database.
         const response = await authModel.changeUserName(changeUserNameDto);
 
@@ -60,6 +60,14 @@ export class AuthController {
         res.status(StatusCodes.OK).json(token);
     }
 
+    static async logoutUser(req: Request, res: Response) {
+        //----> Logout the user.
+        const response = await authModel.logoutUser(req, res);
+
+        //----> Send back the response.
+        res.status(StatusCodes.OK).json(response);
+    }
+
     ////----> Get current user function.
     static async getCurrentUser(req: Request, res: Response) {
         //----> Get the user info from request object.
@@ -85,7 +93,7 @@ export class AuthController {
     ////----> Signup controller function
     static async signupUser(req: Request, res: Response) {
         //----> Get the signup payload from request.
-        const signupDto: SignupDto = req.body as SignupDto;
+        const signupDto: SignupUserDto = req.body as SignupUserDto;
 
         //----> Save the new user and the new employee into the database.
         const response = await authModel.signupUser(signupDto);

@@ -1,14 +1,14 @@
 import {ChangeUserPasswordDto} from "../dto/changeUserPassword.dto";
 import catchError from "http-errors";
 import {StatusCodes} from "http-status-codes";
-import {Response, Request} from "express";
+import express, {Request, Response} from "express";
 import prisma from "../db/prisma.db";
 import * as bcrypt from "bcryptjs";
 import * as jwt from "jsonwebtoken";
 import {ResponseMessage} from "../utils/responseMessage.util";
 import {ChangeUserNameDto} from "../dto/changeUserName.dto";
 import {ChangeUserImageDto} from "../dto/changeUserImage.dto";
-import {SignupDto} from "../dto/signup.dto";
+import {SignupUserDto} from "../dto/signupUser.dto";
 import {Role, Token, TokenType, User} from "@prisma/client";
 import {LoginUserDto} from "../dto/loginUser.dto";
 import {AuthCreateEditParamUtil} from "../utils/AuthCreateEditParam.util";
@@ -18,6 +18,7 @@ import {CookieParamUtil} from "../utils/CookieParam.util";
 import {CreateTokenDto} from "../dto/createToken.dto";
 import {TokenJwt} from "../utils/token.dto";
 import {UserAuth} from "../utils/userAuth.dto";
+import {employeeModel} from "./employee.model";
 
 
 class AuthModel{
@@ -63,8 +64,14 @@ class AuthModel{
             throw catchError(StatusCodes.UNAUTHORIZED, "Invalid credentials!");
         }
 
-        //----> Store the updated user-profile in the database.
+        //----> Get the employee info for this user.
+        const employee = await employeeModel.getEmployeeByEmail(email);
+
+        //----> Store the updated user-profile in the user database.
         await prisma.user.update({where: {email}, data : {...user, name: name !== undefined ? name: user.name}});
+
+        //----> Update the name field on employee model.
+        await prisma.employee.update({where: {email}, data : {...employee, name: name !== undefined ? name: user.name}});
 
         //----> Send back the response.
         return new ResponseMessage("Name has been changed successfully!", "success", StatusCodes.OK);
@@ -84,11 +91,18 @@ class AuthModel{
             throw catchError(StatusCodes.UNAUTHORIZED, "Invalid credentials!");
         }
 
+
+        //----> Get the employee info for this user.
+        const employee = await employeeModel.getEmployeeByEmail(email);
+
         //----> Store the updated user-profile in the database.
         await prisma.user.update({where: {email}, data : {...user, image: image !== undefined ? image: user.image}});
 
+        //----> Update the image field on employee model.
+        await prisma.employee.update({where: {email}, data : {...employee, image: image !== undefined ? image: user.image}});
+
         //----> Send back the response.
-        return new ResponseMessage("Name has been changed successfully!", "success", StatusCodes.OK);
+        return new ResponseMessage("Image has been changed successfully!", "success", StatusCodes.OK);
 
     }
 
@@ -108,11 +122,44 @@ class AuthModel{
         return user;
     }
 
+    //----> Logout user function.
+    async logoutUser(req: express.Request, res: express.Response){
+        //----> Get the current user id.
+        const {id} = req.user;
+        //----> Get access token.
+        const accessToken = this.getCookie(req, CookieParamUtil.accessToken);
+
+        //----> Get the current valid token object.
+        const validToken = (await tokenModel.findAllValidTokensByUserId(id)).find(token => token.accessToken  === accessToken); //&& token.userId === id);
+
+        //----> Check for invalid token
+        if (validToken.expired && validToken.revoked){
+            throw catchError(StatusCodes.UNAUTHORIZED, "You have already logout!");
+        }
+
+        //----> Invalidate the valid token once the user logs out.
+        validToken.revoked = true;
+        validToken.expired = true;
+
+        //----> Save the updated token value in the token database.
+        await tokenModel.editToken(validToken, validToken.id);
+
+        //----> Delete access-token and refresh-token.
+        this.deleteCookie(res, CookieParamUtil.accessToken, CookieParamUtil.accessTokenPath)
+        this.deleteCookie(res, CookieParamUtil.refreshToken, CookieParamUtil.refreshTokenPath)
+
+
+        //----> Send back the response.
+        return new ResponseMessage("Logout is successful!", "success", StatusCodes.OK);
+    }
+
+    ////----> Get current user function
     async getCurrentUser(email: string){
         //----> Check if user exist and return a valid user.
         return  await this.existUserByEmail(email, AuthCreateEditParamUtil.edit);
     }
 
+    ///----> Login function.
     async getLoginAccess(res: Response, user: User){
         //----> Revoke all valid tokens.
         await tokenModel.revokeAllValidUserTokens(user.id);
@@ -135,7 +182,7 @@ class AuthModel{
     async refreshUserToken(req: Request, res: Response){
         //----> Get refresh token.
         const refreshToken = this.getCookie(req, CookieParamUtil.refreshToken);
-        console.log("In refresh-user-token, refreshToken : ",refreshToken);
+
         //----> Parse the refresh-token and check for validity of token.
         const userAuth = this.validateUserToken(refreshToken)
 
@@ -152,6 +199,7 @@ class AuthModel{
         return this.getTokensAndSetCookies(userAuth, res);
     }
 
+    ////----> Validate token function.
     validateUserToken = (token: string) => {
         //----> Check for empty token.
         if(!token) {
@@ -171,7 +219,7 @@ class AuthModel{
     }
 
     ////----> Signup model function.
-    async signupUser(signupDto: SignupDto){
+    async signupUser(signupDto: SignupUserDto){
         //----> Destructure the payload.
         const {email, password, confirmPassword, role, image, name, ...rest} = signupDto;
 
@@ -276,6 +324,12 @@ class AuthModel{
             {expiresIn}
         );
     }
+
+    ////----> Delete cookie function.
+    deleteCookie = (res: Response, cookieName: string, cookiePath: string) => {
+        res.clearCookie(cookieName, { path: cookiePath, secure: false, httpOnly: true });
+    }
+
 
 }
 
