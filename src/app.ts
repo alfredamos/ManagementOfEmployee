@@ -8,6 +8,8 @@ import notFoundRouteMiddleware from "./middlewares/notFoundrouteHandler.middlewa
 import errorHandlerMiddleware from "./middlewares/errorHandler.middleware";
 import {cookieBasedAuthenticationMiddleware} from "./middlewares/cookieBasedAuthentication.middleware";
 import {cookieBasedAdminRoleMiddleware} from "./middlewares/cookieBasedAdminRole.middleware";
+import userRoutes from "./routes/user.route";
+import employeeRoutes from "./routes/employee.route";
 
 dotenv.config();
 
@@ -42,6 +44,12 @@ app.use(cookieBasedAdminRoleMiddleware);
 
 //----> Auth routes.
 app.use("/api/auth", authRoutes);
+
+//----> Employee routes.
+app.use("/api/employees", employeeRoutes)
+
+//----> User routes.
+app.use("/api/users", userRoutes)
 
 app.use(notFoundRouteMiddleware);
 app.use(errorHandlerMiddleware);
