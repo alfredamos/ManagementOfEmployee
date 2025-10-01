@@ -31,10 +31,16 @@ class EmployeeModel{
         ownershipAndAdminCheckUtil(req, employee.userId);
 
         //----> Fetch user associated with this employee.
-        const user = await prisma.user.findUnique({where: {id: employeeToEdit.userId}})
+        const user = await prisma.user.findUnique({where: {email: employeeToEdit.email}});
+
+        //----> Calculate the age.
+        const age = new Date()?.getFullYear() - new Date(employeeToEdit.dateOfBirth)?.getFullYear();
+
+        //----> Get iso date from employee payload.
+        const isodate = new Date(employeeToEdit.dateOfBirth).toISOString();
 
         //----> Edit the employee.
-        const editedEmployee = await prisma.employee.update({where : {id}, data: {...employeeToEdit, email: employee.email, userId: employee.userId}});
+        const editedEmployee = await prisma.employee.update({where : {id}, data: {...employeeToEdit, email: employee.email, userId: employee.userId, age, dateOfBirth: !!isodate ? isodate : employee.dateOfBirth}});
 
         //----> Edit name and image in user.
         await prisma.user.update({where: {id: user.id}, data:{...user, name: editedEmployee.name, image: editedEmployee.image}});
