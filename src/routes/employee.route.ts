@@ -1,9 +1,6 @@
 import express from 'express';
 import {checkValidIdParam} from "../middlewares/checkValidIdParam.middleware";
 import {EmployeeController} from "../controllers/employee.controller";
-import {UserController} from "../controllers/user.controller";
-import {cookieBasedAuthenticationMiddleware} from "../middlewares/cookieBasedAuthentication.middleware";
-import {cookieBasedAdminRoleMiddleware} from "../middlewares/cookieBasedAdminRole.middleware";
 import {employeeMiddleware} from "../middlewares/employee.middleware";
 
 

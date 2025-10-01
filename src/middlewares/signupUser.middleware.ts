@@ -7,7 +7,6 @@ import {changeUserImageSchema, signupUserSchema} from "../validations/auth.valid
 import {SignupUserDto} from "../dto/signupUser.dto";
 
 export function signupUserMiddleware(req: Request, _res: Response, next: NextFunction)  {
-    console.log("At point 1, In signupUserMiddleware, signUserDto : ", req.body);
     //----> Get the payload from request object.
     const signupDto = req.body as SignupUserDto;
 
@@ -16,6 +15,5 @@ export function signupUserMiddleware(req: Request, _res: Response, next: NextFun
     }
 
     //----> All fields are valid
-    console.log("At point 2, In signupUserMiddleware, signUserDto : ", req.body);
     return next();
 }

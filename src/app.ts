@@ -3,13 +3,15 @@ import dotenv from "dotenv";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 
-import authRoutes from "./routes/auth.route";
 import notFoundRouteMiddleware from "./middlewares/notFoundrouteHandler.middleware";
 import errorHandlerMiddleware from "./middlewares/errorHandler.middleware";
 import {cookieBasedAuthenticationMiddleware} from "./middlewares/cookieBasedAuthentication.middleware";
 import {cookieBasedAdminRoleMiddleware} from "./middlewares/cookieBasedAdminRole.middleware";
-import userRoutes from "./routes/user.route";
+
+import authRoutes from "./routes/auth.route";
 import employeeRoutes from "./routes/employee.route";
+import tokenRoutes from "./routes/token.route";
+import userRoutes from "./routes/user.route";
 
 dotenv.config();
 
@@ -46,10 +48,13 @@ app.use(cookieBasedAdminRoleMiddleware);
 app.use("/api/auth", authRoutes);
 
 //----> Employee routes.
-app.use("/api/employees", employeeRoutes)
+app.use("/api/employees", employeeRoutes);
 
 //----> User routes.
-app.use("/api/users", userRoutes)
+app.use("/api/users", userRoutes);
+
+//----> Token routes.
+app.use("/api/tokens", tokenRoutes);
 
 app.use(notFoundRouteMiddleware);
 app.use(errorHandlerMiddleware);

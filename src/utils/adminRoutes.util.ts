@@ -1,6 +1,7 @@
 const adminRoutes = [
     "/api/employees",
     "/api/users",
+    "/api/tokens/all/delete-all",
 ];
 
 function routerMatches(routeArray: string[], pattern: string){

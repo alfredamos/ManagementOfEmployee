@@ -61,9 +61,35 @@ export class TokenJwtModel {
     }
 
     ////----> Delete all revoked tokens function.
-    async deleteAllRevokedTokens(userId: string){
+    async deleteAllRevokedTokensByUserId(userId: string){
         //----> retrieve all revoked tokens.
-        const revokedTokens = await this.revokeAllValidUserTokens(userId);
+        const revokedTokens = await prisma.token.findMany({where: {userId, expired: true, revoked: true}});
+
+        //----> Collect all the ids of revoked tokens.
+        const revokedTokenIds = revokedTokens.map((token) => token.id);
+
+        //----> Delete all revoked tokens.
+        const deletedTokens = await prisma.token.deleteMany({
+            where: {
+                id : {
+                    in: revokedTokenIds,
+                }
+            }
+        })
+
+        //----> Verify that tokens are actually deleted.
+        if (!deletedTokens?.count){
+            throw catchError(StatusCodes.NOT_FOUND, "No token deleted!");
+        }
+
+        //----> Send back the response.
+        return new ResponseMessage("All revoked tokens have been deleted successfully!", "success", StatusCodes.OK)
+    }
+
+    ////----> Delete all revoked tokens function.
+    async deleteAllRevokedTokens(){
+        //----> retrieve all revoked tokens.
+        const revokedTokens = await prisma.token.findMany({where: {revoked: true, expired: true}});
 
         //----> Collect all the ids of revoked tokens.
         const revokedTokenIds = revokedTokens.map((token) => token.id);

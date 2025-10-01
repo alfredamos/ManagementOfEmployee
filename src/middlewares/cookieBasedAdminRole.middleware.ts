@@ -5,9 +5,7 @@ import {StatusCodes} from "http-status-codes";
 import {isAdminRoute} from "../utils/adminRoutes.util";
 
 export function cookieBasedAdminRoleMiddleware(req: Request, _res: Response, next: NextFunction) {
-    console.log("In cookieBasedAdminRoleMiddleware, route", req?.url);
-    console.log("In cookieBasedAdminRoleMiddleware, isAdminRoute : ", isAdminRoute(req?.url));
-
+    //----> Only admin is allowed beyond this point.
     if (!isAdminRoute(req?.url)) {
         return next();
     }

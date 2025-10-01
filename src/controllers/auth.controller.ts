@@ -25,7 +25,7 @@ export class AuthController {
     static async changeUserName(req: Request, res: Response) {
         //----> Get the change password payload from request.
         const changeUserNameDto = req.body as ChangeUserNameDto;
-        console.log("In the change-user-name")
+
         //----> Store the change in name into the database.
         const response = await authModel.changeUserName(changeUserNameDto);
 
